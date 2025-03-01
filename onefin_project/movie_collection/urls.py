@@ -1,0 +1,11 @@
+from django.urls import path
+from .views import RegisterUserView
+
+urlpatterns = [
+    # path('movies/', FetchAllMovies.as_view(), name='fetch-all-movies'),
+    path('register/', RegisterUserView.as_view(), name='register_user'),
+    # path('collection/', UserCollection.as_view(), name='user_collection'),
+    # path('collection/<uuid:collection_uuid>/', CollectionDetailView.as_view(), name='collection-detail'),
+    # path('request-count/', RequestCountView.as_view(), name='request_count'),
+    # path('request-count/reset/', ResetRequestCountView.as_view(), name='reset_request_count'),
+]

@@ -24,7 +24,7 @@ class MovieService:
 
         for attempt in range(retries):
             try:
-                response = requests.get(url, headers=headers, verify=True, timeout=10)
+                response = requests.get(url, headers=headers, verify=False, timeout=10)
                 response.raise_for_status()
                 return response.json()
 
@@ -63,10 +63,10 @@ class CollectionService:
 
     @staticmethod
     def get_collection_by_user_id(user_id):
-        collections_objs = Collection.objects.filter(user=user_id).prefetch_related('collectionmap_set__movie_key')
+        collections_objs = Collection.objects.filter(user=user_id).prefetch_related('movies__movie_key')
         genres = []
         for collection in collections_objs:
-            for mapping in collection.collectionmap_set.all():
+            for mapping in collection.movies.all():
                 if mapping.movie_key and mapping.movie_key.genres:
                     non_empty_genres = [genre.strip() for genre in mapping.movie_key.genres.split(',') if genre.strip()]
                     genres.extend(non_empty_genres)
@@ -94,7 +94,7 @@ class CollectionService:
 
             collection = Collection.objects.create(
                 title=title,
-                user=user_id,
+                user=request.user,
                 description=description
             )
             for movie_data in movies:
@@ -131,7 +131,7 @@ class CollectionService:
             collection.save()
             movie_uuids = [movie['uuid'] for movie in request.data.get('movies', [])]
             current_movies = CollectionMap.objects.filter(collection_key=collection).select_related('movie_key')
-            current_movie_uuids = [mapping.movie_key.uuid for mapping in current_movies]
+            current_movie_uuids = [str(mapping.movie_key.uuid) for mapping in current_movies]
             for mapping in current_movies:
                 if str(mapping.movie_key.uuid) not in movie_uuids:
                     mapping.delete()
@@ -139,6 +139,7 @@ class CollectionService:
                 if movie_uuid not in current_movie_uuids:
                     movie = Movie.objects.get(uuid=movie_uuid)
                     CollectionMap.objects.create(collection_key=collection, movie_key=movie)
+
             updated_movies = CollectionMap.objects.filter(collection_key=collection).select_related('movie_key')
             movie_details = MovieSerializer([mapping.movie_key for mapping in updated_movies], many=True).data
 

@@ -24,15 +24,15 @@ class MovieService:
 
         for attempt in range(retries):
             try:
-                response = requests.get(url, headers=headers, verify=False, timeout=10)
+                response = requests.get(url, headers=headers, verify=True)
                 response.raise_for_status()
                 return response.json()
 
-            except requests.exceptions.Timeout:
-                print(f"Attempt {attempt + 1}: Connection timed out. Retrying...")
+            except requests.exceptions.Timeout as error:
+                print(f"Attempt {attempt + 1}: Connection timed out. Retrying...: {error}")
 
-            except requests.exceptions.RequestException as e:
-                print(f"Attempt {attempt + 1}: Exception occurred: {e}")
+            except requests.exceptions.RequestException as error:
+                print(f"Attempt {attempt + 1}: Exception occurred: {error}")
             time.sleep(delay)
         raise Exception(f"Failed to connect after {retries} attempts.")
 

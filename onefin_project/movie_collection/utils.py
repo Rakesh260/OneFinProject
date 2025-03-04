@@ -24,7 +24,7 @@ class MovieService:
 
         for attempt in range(retries):
             try:
-                response = requests.get(url, headers=headers, verify=True)
+                response = requests.get(url, headers=headers, verify=False, timeout=10)
                 response.raise_for_status()
                 return response.json()
 
